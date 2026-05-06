@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сумма по списку — виджет для amoCRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #1b4dff;
+    --blue-light: #e8edff;
+    --blue-mid: #5b8fff;
+    --dark: #0d1b3e;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #f8f9ff;
+  }
+
+  body {
+    font-family: 'Onest', sans-serif;
+    background: #fff;
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: var(--dark);
+    padding: 80px 24px 72px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(27,77,255,.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(27,77,255,.15);
+    border: 1px solid rgba(27,77,255,.3);
+    color: #93b4ff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero h1 span {
+    color: var(--blue-mid);
+  }
+
+  .hero p {
+    font-size: 18px;
+    color: #94a3b8;
+    max-width: 520px;
+    margin: 0 auto 40px;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 28px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background .2s;
+  }
+
+  .hero-cta:hover { background: #1640e0; }
+
+  /* ── Preview ── */
+  .preview {
+    background: var(--dark);
+    padding: 0 24px 64px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .preview-card {
+    background: #111d40;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 680px;
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .preview-header {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding-bottom: 10px;
+    margin-bottom: 0;
+  }
+
+  .preview-header span {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: #64748b;
+    padding: 0 8px;
+  }
+
+  .preview-header .with-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+  }
+
+  .sum-badge {
+    background: #e8edff;
+    color: #1b4dff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .preview-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 1fr;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    padding: 10px 0;
+  }
+
+  .preview-row span {
+    padding: 0 8px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .preview-row .deal-name { color: #60a5fa; }
+  .preview-row .value { color: #e2e8f0; font-weight: 500; }
+
+  .preview-status {
+    display: inline-block;
+    background: rgba(251,191,36,.15);
+    color: #fbbf24;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  /* ── Features ── */
+  .features {
+    padding: 80px 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 48px;
+    max-width: 500px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+
+  .feature-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .feature-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--blue-light);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    font-size: 18px;
+  }
+
+  .feature-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .feature-card p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── Steps ── */
+  .steps {
+    padding: 0 24px 80px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 36px;
+    height: 36px;
+    background: var(--dark);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-content h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  .step-content p {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* ── Privacy ── */
+  .privacy {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 64px 24px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .privacy h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .privacy p, .privacy li {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 12px;
+  }
+
+  .privacy ul { padding-left: 20px; }
+
+  /* ── Footer ── */
+  .footer {
+    background: var(--dark);
+    padding: 32px 24px;
+    text-align: center;
+  }
+
+  .footer p {
+    font-size: 13px;
+    color: #475569;
+  }
+
+  .footer a {
+    color: #60a5fa;
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Виджет для amoCRM</div>
+  <h1>Суммируйте числовые поля <span>прямо в списке</span> сделок</h1>
+  <p>Виджет автоматически считает итог по выбранным числовым полям и показывает сумму рядом с названием столбца — с учётом активного фильтра.</p>
+  <a href="https://www.amocrm.ru/apps/" class="hero-cta">
+    Установить из amoМаркета →
+  </a>
+</section>
+
+<!-- PREVIEW -->
+<section class="preview">
+  <div class="preview-card">
+    <div class="preview-header">
+      <span>Название сделки</span>
+      <span>Контакт</span>
+      <span>Этап</span>
+      <span>Бюджет</span>
+      <span class="with-badge">Сумма <span class="sum-badge">∑ 1 500</span></span>
+      <span>Доп. поле</span>
+    </div>
+    <div class="preview-row">
+      <span class="deal-name">Сделка #48033623</span>
+      <span>Тест1</span>
+      <span><span class="preview-status">Неразобранное</span></span>
+      <span>0</span>
+      <span class="value">1 000</span>
+      <span>—</span>
+    </div>
+    <div class="preview-row">
+      <span class="deal-name">Сделка #48033603</span>
+      <span>Тест2</span>
+      <span><span class="preview-status">Неразобранное</span></span>
+      <span>0</span>
+      <span class="value">500</span>
+      <span>—</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="section-label">Возможности</div>
+  <h2 class="section-title">Всё что нужно для быстрой аналитики</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">∑</div>
+      <h3>Сумма в заголовке столбца</h3>
+      <p>Итог отображается прямо рядом с названием поля — не нужно считать вручную или открывать отчёты.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Учитывает активный фильтр</h3>
+      <p>Меняете фильтр — сумма пересчитывается автоматически. Только те сделки, которые видны на экране.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎛</div>
+      <h3>Гибкие настройки</h3>
+      <p>Выбирайте любые числовые поля для суммирования через удобный мультиселект в настройках.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌙</div>
+      <h3>Тёмная и светлая тема</h3>
+      <p>Виджет автоматически адаптируется под тему оформления вашего аккаунта amoCRM.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="steps">
+  <div class="section-label">Инструкция</div>
+  <h2 class="section-title" style="margin-bottom:32px">Три шага до результата</h2>
+  <div class="steps-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Установите виджет</h3>
+        <p>Найдите виджет «Сумма по списку» в amoМаркете и нажмите «Установить». Согласитесь с передачей данных.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Выберите поля для суммирования</h3>
+        <p>Перейдите в Настройки → Сумма по списку. В мультиселекте отметьте числовые поля, которые хотите суммировать, и нажмите «Сохранить настройки».</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Откройте список сделок</h3>
+        <p>Перейдите в раздел «Сделки» — рядом с названием каждого выбранного столбца появится бейдж с суммой. Применяйте фильтры — сумма обновится автоматически.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACY -->
+<div style="background: var(--bg); border-top: 1px solid var(--border);">
+<div class="privacy">
+  <h2>Политика конфиденциальности</h2>
+  <p>Последнее обновление: май 2026 г.</p>
+
+  <p><strong>Разработчик:</strong> [Ваше имя / название компании]. Контакт: [ваш email]</p>
+
+  <p>Виджет «Сумма по списку» обращается к следующим данным вашего аккаунта amoCRM:</p>
+  <ul>
+    <li>Список кастомных числовых полей сделок (для отображения в настройках виджета)</li>
+    <li>Значения числовых полей в текущем списке сделок (для подсчёта суммы)</li>
+  </ul>
+
+  <p>Виджет <strong>не передаёт</strong> никакие данные на внешние серверы. Все вычисления происходят локально в браузере пользователя. Выбранные поля сохраняются в localStorage браузера.</p>
+
+  <p>Виджет не собирает персональные данные пользователей amoCRM и не использует аналитику или трекеры.</p>
+
+  <p>По всем вопросам обращайтесь: <a href="mailto:ваш@email.ru" style="color:var(--blue)">ваш@email.ru</a></p>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>© 2026 [Ваше имя / компания] &nbsp;·&nbsp; <a href="mailto:ваш@email.ru">ваш@email.ru</a></p>
+</footer>
+
+</body>
+</html>
