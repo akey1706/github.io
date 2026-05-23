@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Панель лицензий</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:32px 16px}
+  .lock{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px}
+  .lock h2{font-size:20px;font-weight:600;color:#fff}
+  .lock p{font-size:14px;color:#64748b}
+  .container{max-width:560px;margin:0 auto}
+  h1{font-size:20px;font-weight:700;margin-bottom:4px;color:#fff}
+  .sub{font-size:13px;color:#64748b;margin-bottom:32px}
+  .card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:20px}
+  .card h2{font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px}
+  label{display:block;font-size:13px;color:#94a3b8;margin-bottom:5px;margin-top:12px}
+  label:first-of-type{margin-top:0}
+  input{width:100%;padding:10px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none}
+  input:focus{border-color:#3b82f6}
+  button{width:100%;margin-top:16px;padding:11px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+  button:hover{background:#2563eb}
+  button.green{background:#16a34a} button.green:hover{background:#15803d}
+  button.slate{background:#475569} button.slate:hover{background:#334155}
+  .result{margin-top:14px;padding:12px 14px;border-radius:8px;font-size:13px;font-family:monospace;display:none;word-break:break-all}
+  .result.ok{background:#052e16;border:1px solid #166534;color:#4ade80}
+  .result.err{background:#2d0a0a;border:1px solid #991b1b;color:#f87171}
+  .key-box{background:#0f172a;border:1px solid #1e40af;border-radius:8px;padding:12px 14px;margin-top:10px;font-family:monospace;font-size:16px;color:#60a5fa;font-weight:700;text-align:center;display:none}
+</style>
+</head>
+<body>
+
+<div class="lock" id="lock-screen">
+  <h2>🔑 Панель лицензий</h2>
+  <p>Введите данные для входа</p>
+  <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px">
+    <input type="text" id="server-input" placeholder="https://sumbylist-license.vercel.app"/>
+    <input type="password" id="pass-input" placeholder="Пароль администратора"/>
+    <button onclick="unlock()" style="margin-top:0">Войти</button>
+    <div id="lock-err" style="font-size:13px;color:#f87171;text-align:center;min-height:18px"></div>
+  </div>
+</div>
+
+<div class="container" id="main-panel" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+    <h1>🔑 Панель лицензий</h1>
+    <button onclick="logout()" style="width:auto;margin:0;padding:6px 14px;font-size:12px;background:#334155">Выйти</button>
+  </div>
+  <p class="sub" id="server-label"></p>
+
+  <div class="card">
+    <h2>🆓 Выдать триал (14 дней)</h2>
+    <label>Домен аккаунта amoCRM</label>
+    <input id="trial-domain" type="text" placeholder="client.amocrm.ru"/>
+    <button onclick="addLicense('trial')">Активировать триал</button>
+    <div id="trial-result" class="result"></div>
+  </div>
+
+  <div class="card">
+    <h2>💳 Выдать полную лицензию</h2>
+    <label>Домен аккаунта amoCRM</label>
+    <input id="paid-domain" type="text" placeholder="client.amocrm.ru"/>
+    <button class="green" onclick="addLicense('paid')">Выдать лицензию</button>
+    <div id="paid-result" class="result"></div>
+    <div id="paid-key" class="key-box"></div>
+    <button id="copy-btn" onclick="copyKey()" style="display:none;margin-top:8px;background:#1e40af;font-size:12px;padding:8px">📋 Скопировать ключ</button>
+  </div>
+
+  <div class="card">
+    <h2>🔍 Проверить статус</h2>
+    <label>Домен</label>
+    <input id="check-domain" type="text" placeholder="client.amocrm.ru"/>
+    <label>Ключ (не нужен для триала)</label>
+    <input id="check-key" type="text" placeholder="WSL-XXXX-XXXX"/>
+    <button class="slate" onclick="checkLicense()">Проверить</button>
+    <div id="check-result" class="result"></div>
+  </div>
+</div>
+
+<script>
+var SERVER = '', PASS = '';
+
+function unlock() {
+  var s = document.getElementById('server-input').value.trim().replace(/\/$/, '');
+  var p = document.getElementById('pass-input').value.trim();
+  var err = document.getElementById('lock-err');
+  if (!s || !p) { err.textContent = 'Заполните все поля'; return; }
+  err.textContent = 'Подключаемся...';
+
+  fetch(s + '/api/ping', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: p })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.ok) {
+      SERVER = s; PASS = p;
+      document.getElementById('lock-screen').style.display = 'none';
+      document.getElementById('main-panel').style.display = 'block';
+      document.getElementById('server-label').textContent = 'Сервер: ' + s;
+    } else {
+      err.textContent = 'Неверный пароль';
+    }
+  })
+  .catch(function() { err.textContent = 'Не удалось подключиться. Проверьте URL.'; });
+}
+
+function logout() {
+  SERVER = ''; PASS = '';
+  document.getElementById('lock-screen').style.display = 'flex';
+  document.getElementById('main-panel').style.display = 'none';
+  document.getElementById('pass-input').value = '';
+  document.getElementById('lock-err').textContent = '';
+}
+
+document.getElementById('pass-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') unlock();
+});
+
+function addLicense(type) {
+  var domain = document.getElementById(type + '-domain').value.trim();
+  if (!domain) { alert('Введите домен'); return; }
+  fetch(SERVER + '/api/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: PASS, domain: domain, type: type })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    showResult(type + '-result', data, !data.success);
+    if (type === 'paid' && data.key) {
+      document.getElementById('paid-key').textContent = data.key;
+      document.getElementById('paid-key').style.display = 'block';
+      document.getElementById('copy-btn').style.display = 'block';
+      window._lastKey = data.key;
+    }
+  })
+  .catch(function(e) { showResult(type + '-result', { error: e.message }, true); });
+}
+
+function checkLicense() {
+  var domain = document.getElementById('check-domain').value.trim();
+  var key = document.getElementById('check-key').value.trim();
+  fetch(SERVER + '/api/check?domain=' + encodeURIComponent(domain) + '&key=' + encodeURIComponent(key))
+  .then(function(r) { return r.json(); })
+  .then(function(data) { showResult('check-result', data, !data.valid); })
+  .catch(function(e) { showResult('check-result', { error: e.message }, true); });
+}
+
+function showResult(id, data, isError) {
+  var el = document.getElementById(id);
+  el.textContent = JSON.stringify(data, null, 2);
+  el.className = 'result ' + (isError ? 'err' : 'ok');
+  el.style.display = 'block';
+}
+
+function copyKey() {
+  if (!window._lastKey) return;
+  navigator.clipboard.writeText(window._lastKey)
+    .then(function() { alert('Скопировано: ' + window._lastKey); })
+    .catch(function() { prompt('Скопируйте:', window._lastKey); });
+}
+</script>
+</body>
+</html>
