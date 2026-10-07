@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Идентификаторы аккаунта — виджет для amoCRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #1b4dff;
+    --blue-light: #e8edff;
+    --blue-mid: #5b8fff;
+    --dark: #0d1b3e;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #f8f9ff;
+    --tg: #229ED9;
+  }
+
+  body {
+    font-family: 'Onest', sans-serif;
+    background: #fff;
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    background: var(--dark);
+    padding: 80px 24px 72px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(27,77,255,.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(27,77,255,.15);
+    border: 1px solid rgba(27,77,255,.3);
+    color: #93b4ff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero h1 span { color: var(--blue-mid); }
+
+  .hero p {
+    font-size: 18px;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto 40px;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 28px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all .2s;
+  }
+
+  .btn-primary {
+    background: var(--blue);
+    color: #fff;
+  }
+
+  .btn-primary:hover { background: #1640e0; }
+
+  .btn-tg {
+    background: var(--tg);
+    color: #fff;
+  }
+
+  .btn-tg:hover { background: #1a8bbf; }
+
+  .preview {
+    background: var(--dark);
+    padding: 0 24px 64px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .preview-card {
+    background: #111d40;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 760px;
+    width: 100%;
+    font-size: 13px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  }
+
+  .preview-title {
+    color: #e2e8f0;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .preview-search {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .preview-search span {
+    flex: 1;
+    background: #0d1b3e;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 7px;
+    padding: 9px 12px;
+    color: #64748b;
+  }
+
+  .preview-search b {
+    background: #f8fafc;
+    color: #1a1a2e;
+    border-radius: 7px;
+    padding: 8px 14px;
+    font-weight: 500;
+  }
+
+  .preview-section {
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 9px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .preview-section-title {
+    background: #f8fafc;
+    color: #1a1a2e;
+    padding: 9px 12px;
+    font-weight: 600;
+  }
+
+  .preview-row {
+    display: grid;
+    grid-template-columns: 1.4fr 2fr;
+    border-top: 1px solid rgba(255,255,255,.06);
+    padding: 8px 12px;
+    align-items: center;
+  }
+
+  .preview-row .label { color: #64748b; }
+  .preview-row .value {
+    color: #e2e8f0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,.06);
+    border-radius: 5px;
+    padding: 3px 7px;
+    width: fit-content;
+  }
+
+  .preview-pipelines {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .preview-pipeline {
+    background: #0d1b3e;
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .preview-pipeline strong {
+    color: #e2e8f0;
+    font-size: 12px;
+  }
+
+  .preview-pipeline small {
+    display: block;
+    color: #64748b;
+    margin-top: 3px;
+  }
+
+  .features {
+    padding: 80px 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 48px;
+    max-width: 560px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+
+  .feature-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .feature-icon {
+    width: 40px; height: 40px;
+    background: var(--blue-light);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+    font-size: 18px;
+  }
+
+  .feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .feature-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+  .steps {
+    padding: 0 24px 80px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .steps-list {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 36px; height: 36px;
+    background: var(--dark);
+    color: #fff;
+    font-size: 14px; font-weight: 700;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+  }
+
+  .step-content h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .step-content p { font-size: 14px; color: var(--muted); }
+
+  .support-cta {
+    background: var(--dark);
+    padding: 64px 24px;
+    text-align: center;
+  }
+
+  .support-cta h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  .support-cta p {
+    font-size: 16px;
+    color: #94a3b8;
+    margin-bottom: 32px;
+  }
+
+  .footer {
+    background: var(--dark);
+    padding: 28px 24px;
+    color: #94a3b8;
+    border-top: 1px solid rgba(255,255,255,.06);
+  }
+
+  .footer-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-left {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .footer-links a {
+    color: #94a3b8;
+    font-size: 13px;
+    text-decoration: none;
+    transition: 0.2s;
+    position: relative;
+  }
+
+  .footer-links a:hover { color: #60a5fa; }
+
+  .footer-links a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 1px;
+    background: #60a5fa;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease;
+  }
+
+  .footer-links a:hover::after { transform: scaleX(1); }
+
+  @media (max-width: 600px) {
+    .footer-inner {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .preview-search { flex-direction: column; }
+    .preview-pipelines { grid-template-columns: 1fr; }
+    .preview-row { grid-template-columns: 1fr; gap: 4px; }
+    .step { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">Виджет для amoCRM</div>
+  <h1>Все идентификаторы amoCRM <span>в одном месте</span></h1>
+  <p>Быстро находите ID аккаунта, пользователей, воронок, этапов и пользовательских полей. Удобный справочник для интеграций, автоматизации и работы с API.</p>
+  <div class="hero-btns">
+    <!-- После публикации замените href на OAuth-ссылку нового виджета -->
+    <a href="https://www.amocrm.ru/marketplace" class="btn btn-primary">
+      Установить из amoМаркета →
+    </a>
+    <a href="https://t.me/akey1706" target="_blank" rel="noopener" class="btn btn-tg">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/></svg>
+      Написать в поддержку
+    </a>
+  </div>
+</section>
+
+<section class="preview">
+  <div class="preview-card">
+    <div class="preview-title">Идентификаторы аккаунта</div>
+
+    <div class="preview-search">
+      <span>Поиск по названию или ID...</span>
+      <b>Обновить</b>
+    </div>
+
+    <div class="preview-section">
+      <div class="preview-section-title">Аккаунт</div>
+      <div class="preview-row">
+        <span class="label">ID аккаунта</span>
+        <span class="value">33040954</span>
+      </div>
+      <div class="preview-row">
+        <span class="label">ID текущего пользователя</span>
+        <span class="value">6054133</span>
+      </div>
+      <div class="preview-row">
+        <span class="label">UUID аккаунта</span>
+        <span class="value">2d20bcc8-4798-11f1-8797-00163ebcc431</span>
+      </div>
+    </div>
+
+    <div class="preview-pipelines">
+      <div class="preview-pipeline">
+        <strong>Продажи</strong>
+        <small>ID воронки: 10879194</small>
+      </div>
+      <div class="preview-pipeline">
+        <strong>Сервис</strong>
+        <small>ID воронки: 10931642</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="section-label">Возможности</div>
+  <h2 class="section-title">Удобный справочник для работы с amoCRM API</h2>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">◎</div>
+      <h3>Все основные ID в одном месте</h3>
+      <p>Аккаунт, пользователи, воронки, этапы и пользовательские поля доступны на одной странице без необходимости искать их вручную.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">⌕</div>
+      <h3>Быстрый поиск</h3>
+      <p>Ищите объект по названию или идентификатору. Удобно, когда в аккаунте много пользователей, воронок и полей.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">⧉</div>
+      <h3>Копирование ID</h3>
+      <p>Идентификаторы удобно копировать и сразу использовать в API-запросах, вебхуках, автоматизациях и собственных интеграциях.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">↻</div>
+      <h3>Актуальные данные</h3>
+      <p>Данные загружаются непосредственно из API вашего аккаунта. При необходимости информацию можно обновить одной кнопкой.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">◫</div>
+      <h3>Воронки и этапы</h3>
+      <p>Для каждой воронки отображаются её ID и идентификаторы этапов, включая служебные статусы.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">☾</div>
+      <h3>Светлая и тёмная тема</h3>
+      <p>Интерфейс автоматически адаптируется под тему оформления вашего аккаунта amoCRM.</p>
+    </div>
+  </div>
+</section>
+
+<section class="steps">
+  <div class="section-label">Инструкция</div>
+  <h2 class="section-title" style="margin-bottom:32px">Три шага до нужного ID</h2>
+
+  <div class="steps-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Установите виджет</h3>
+        <p>Найдите «Идентификаторы аккаунта» в amoМаркете и нажмите «Установить». Предоставьте необходимые права доступа.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Откройте настройки</h3>
+        <p>После установки перейдите в настройки amoCRM и откройте раздел «Идентификаторы аккаунта».</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Найдите и скопируйте ID</h3>
+        <p>Используйте поиск или нужный раздел, найдите объект и скопируйте его идентификатор для дальнейшего использования.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="support-cta">
+  <h2>Нужна помощь?</h2>
+  <p>Напишите нам в Telegram — ответим и поможем разобраться с виджетом.</p>
+  <a href="https://t.me/akey1706" target="_blank" rel="noopener" class="btn btn-tg" style="font-size:16px;padding:16px 36px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/></svg>
+    Открыть чат поддержки
+  </a>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <span>© 2026 Антон Кучук</span>
+    </div>
+    <div class="footer-links">
+      <a href="privacy.html">Политика конфиденциальности</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
